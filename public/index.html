@@ -25,20 +25,36 @@
         </form>
 
         <h3 class="text-xl font-semibold mb-3">Product List</h3>
-        <table class="w-full border border-gray-300">
+        <table class="w-full border border-gray-300" id="productTable">
             <tr class="bg-gray-200">
                 <th class="p-3 border">Name</th>
                 <th class="p-3 border">Price</th>
                 <th class="p-3 border">Link</th>
             </tr>
-            <% products.forEach(product => { %>
-                <tr>
-                    <td class="p-3 border"><%= product.name %></td>
-                    <td class="p-3 border">RM<%= product.price %></td>
-                    <td class="p-3 border"><a href="<%= product.link %>" target="_blank" class="text-blue-500 underline">View</a></td>
-                </tr>
-            <% }) %>
         </table>
     </div>
+
+    <script>
+        async function loadProducts() {
+            const response = await fetch('/products');
+            const products = await response.json();
+
+            const table = document.getElementById('productTable');
+
+            products.forEach(product => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td class="p-3 border">${product.name}</td>
+                    <td class="p-3 border">RM${product.price}</td>
+                    <td class="p-3 border"><a href="${product.link}" target="_blank" class="text-blue-500 underline">View</a></td>
+                `;
+
+                table.appendChild(row);
+            });
+        }
+
+        loadProducts();
+    </script>
 </body>
 </html>
