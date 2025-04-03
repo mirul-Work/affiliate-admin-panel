@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const bodyParser = require('body-parser');
+const cron = require('node-cron');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -10,6 +11,7 @@ const telegramBotToken = '7230860487:AAEGztON8bC2WLXGGnp57aVMLo56zIH8FGU';
 const telegramChatIds = ['5206449238', '-1002549440336'];
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
@@ -29,12 +31,37 @@ app.post('/save', (req, res) => {
         let products = fs.existsSync(productFile)
             ? JSON.parse(fs.readFileSync(productFile))
             : [];
-        products.push({ name, price, link });
+        products.push({ id: Date.now(), name, price, link });
         fs.writeFileSync(productFile, JSON.stringify(products, null, 2));
         res.redirect('/');
     } else {
         res.send('❌ Sila lengkapkan semua maklumat.');
     }
+});
+
+app.post('/delete', (req, res) => {
+    const { id } = req.body;
+    let products = fs.existsSync(productFile)
+        ? JSON.parse(fs.readFileSync(productFile))
+        : [];
+    products = products.filter(product => product.id !== parseInt(id));
+    fs.writeFileSync(productFile, JSON.stringify(products, null, 2));
+    res.json({ status: 'success' });
+});
+
+app.post('/edit', (req, res) => {
+    const { id, name, price, link } = req.body;
+    let products = fs.existsSync(productFile)
+        ? JSON.parse(fs.readFileSync(productFile))
+        : [];
+    products = products.map(product => {
+        if (product.id === parseInt(id)) {
+            return { ...product, name, price, link };
+        }
+        return product;
+    });
+    fs.writeFileSync(productFile, JSON.stringify(products, null, 2));
+    res.json({ status: 'success' });
 });
 
 app.post('/blast', async (req, res) => {
@@ -79,6 +106,37 @@ app.post('/detect', async (req, res) => {
     } catch (err) {
         res.send(`❌ Error: ${err.message}`);
     }
+});
+
+// === AUTO CRON SCHEDULE ===
+async function autoBlast() {
+    const products = fs.existsSync(productFile)
+        ? JSON.parse(fs.readFileSync(productFile))
+        : [];
+
+    if (products.length > 0) {
+        for (const chatId of telegramChatIds) {
+            for (const product of products) {
+                const message = `🧕🏻 <b>${product.name}</b>\nHarga: RM${product.price}\n👉 <a href='${product.link}'>Beli Sekarang</a>`;
+                try {
+                    await axios.post(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    });
+                    console.log(`✅ Auto Blast ${product.name} to ${chatId}`);
+                } catch (err) {
+                    console.error(`❌ Fail Blast ${product.name} to ${chatId}:`, err.message);
+                }
+            }
+        }
+    }
+}
+
+// Malaysia Time = UTC +8 → 2AM UTC = 10AM MYT
+cron.schedule('0 2 * * *', () => {
+    console.log('🚀 Auto Blast Cron Triggered');
+    autoBlast();
 });
 
 app.listen(PORT, () => {
