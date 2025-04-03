@@ -17,7 +17,7 @@
         </form>
 
         <form action="/blast" method="POST" class="mb-6">
-            <button type="submit" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600">🚀 Blast Semua Produk ke Telegram</button>
+            <button type="submit" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600">🚀 Blast Semua Produk ke Telegram & Channel</button>
         </form>
 
         <form action="/detect" method="POST" class="mb-6">
@@ -30,6 +30,7 @@
                 <th class="p-3 border">Name</th>
                 <th class="p-3 border">Price</th>
                 <th class="p-3 border">Link</th>
+                <th class="p-3 border">Action</th>
             </tr>
         </table>
     </div>
@@ -48,10 +49,43 @@
                     <td class="p-3 border">${product.name}</td>
                     <td class="p-3 border">RM${product.price}</td>
                     <td class="p-3 border"><a href="${product.link}" target="_blank" class="text-blue-500 underline">View</a></td>
+                    <td class="p-3 border">
+                        <button onclick="editProduct(${product.id}, '${product.name}', '${product.price}', '${product.link}')" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+                        <button onclick="deleteProduct(${product.id})" class="bg-red-500 text-white px-3 py-1 rounded ml-2">Delete</button>
+                    </td>
                 `;
 
                 table.appendChild(row);
             });
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Confirm delete product?')) {
+                await fetch('/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id })
+                });
+                location.reload();
+            }
+        }
+
+        function editProduct(id, name, price, link) {
+            const newName = prompt('Edit Name:', name);
+            const newPrice = prompt('Edit Price:', price);
+            const newLink = prompt('Edit Link:', link);
+
+            if (newName && newPrice && newLink) {
+                fetch('/edit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id, name: newName, price: newPrice, link: newLink })
+                }).then(() => location.reload());
+            }
         }
 
         loadProducts();
