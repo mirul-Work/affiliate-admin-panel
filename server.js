@@ -6,8 +6,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const productFile = 'products.json';
-const telegramBotToken = 'YOUR_TELEGRAM_BOT_TOKEN';
-let telegramChatId = 'YOUR_TELEGRAM_CHAT_ID';
+const telegramBotToken = '7230860487:AAEGztON8bC2WLXGGnp57aVMLo56zIH8FGU';
+let telegramChatId = '5206449238';
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
