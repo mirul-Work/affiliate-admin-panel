@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Affiliate Product Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">Affiliate Product Admin Panel</h2>
+
+        <form action="/save" method="POST" class="mb-6">
+            <input type="text" name="name" placeholder="Product Name" required class="w-full mb-3 p-3 border rounded"><br>
+            <input type="text" name="price" placeholder="Product Price" required class="w-full mb-3 p-3 border rounded"><br>
+            <input type="text" name="link" placeholder="Product Link" required class="w-full mb-3 p-3 border rounded"><br>
+            <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">Save Product</button>
+        </form>
+
+        <form action="/blast" method="POST" class="mb-6">
+            <button type="submit" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600">🚀 Blast Semua Produk ke Telegram</button>
+        </form>
+
+        <form action="/detect" method="POST" class="mb-6">
+            <button type="submit" class="w-full bg-yellow-500 text-white p-3 rounded hover:bg-yellow-600">🔍 Detect Chat ID</button>
+        </form>
+    </div>
+</body>
+</html>
