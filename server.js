@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 const productFile = 'products.json';
 const telegramBotToken = '7230860487:AAEGztON8bC2WLXGGnp57aVMLo56zIH8FGU';
-let telegramChatId = '5206449238';
+const telegramChatIds = ['5206449238', '-1002549440336'];
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -47,17 +47,19 @@ app.post('/blast', async (req, res) => {
     }
 
     let log = '';
-    for (const product of products) {
-        const message = `🧕🏻 <b>${product.name}</b>\nHarga: RM${product.price}\n👉 <a href='${product.link}'>Beli Sekarang</a>`;
-        try {
-            const response = await axios.post(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                chat_id: telegramChatId,
-                text: message,
-                parse_mode: 'HTML'
-            });
-            log += `✅ Hantar ${product.name}: ${response.status}\n`;
-        } catch (err) {
-            log += `❌ Gagal hantar ${product.name}: ${err.message}\n`;
+    for (const chatId of telegramChatIds) {
+        for (const product of products) {
+            const message = `🧕🏻 <b>${product.name}</b>\nHarga: RM${product.price}\n👉 <a href='${product.link}'>Beli Sekarang</a>`;
+            try {
+                const response = await axios.post(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                });
+                log += `✅ Hantar ${product.name} ke ${chatId}: ${response.status}\n`;
+            } catch (err) {
+                log += `❌ Gagal hantar ${product.name} ke ${chatId}: ${err.message}\n`;
+            }
         }
     }
 
@@ -70,7 +72,6 @@ app.post('/detect', async (req, res) => {
         const data = response.data;
         if (data.result.length > 0) {
             const lastChatId = data.result[data.result.length - 1].message.chat.id;
-            telegramChatId = lastChatId;
             res.send(`🔍 Chat ID anda: <strong>${lastChatId}</strong>`);
         } else {
             res.send('❌ Gagal dapatkan Chat ID. Pastikan anda sudah start chat dengan bot.');
