@@ -12,14 +12,15 @@ let telegramChatId = '5206449238';
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-app.set('view engine', 'ejs');
-app.set('views', __dirname + '/public');
-
 app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/products', (req, res) => {
     const products = fs.existsSync(productFile)
         ? JSON.parse(fs.readFileSync(productFile))
         : [];
-    res.render('index', { products });
+    res.json(products);
 });
 
 app.post('/save', (req, res) => {
