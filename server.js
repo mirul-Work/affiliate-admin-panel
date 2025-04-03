@@ -2,7 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-const cron = require('node-cron');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -106,37 +105,6 @@ app.post('/detect', async (req, res) => {
     } catch (err) {
         res.send(`❌ Error: ${err.message}`);
     }
-});
-
-// === AUTO CRON SCHEDULE ===
-async function autoBlast() {
-    const products = fs.existsSync(productFile)
-        ? JSON.parse(fs.readFileSync(productFile))
-        : [];
-
-    if (products.length > 0) {
-        for (const chatId of telegramChatIds) {
-            for (const product of products) {
-                const message = `🧕🏻 <b>${product.name}</b>\nHarga: RM${product.price}\n👉 <a href='${product.link}'>Beli Sekarang</a>`;
-                try {
-                    await axios.post(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                        chat_id: chatId,
-                        text: message,
-                        parse_mode: 'HTML'
-                    });
-                    console.log(`✅ Auto Blast ${product.name} to ${chatId}`);
-                } catch (err) {
-                    console.error(`❌ Fail Blast ${product.name} to ${chatId}:`, err.message);
-                }
-            }
-        }
-    }
-}
-
-// Malaysia Time = UTC +8 → 2AM UTC = 10AM MYT
-cron.schedule('0 2 * * *', () => {
-    console.log('🚀 Auto Blast Cron Triggered');
-    autoBlast();
 });
 
 app.listen(PORT, () => {
